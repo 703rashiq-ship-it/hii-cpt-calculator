@@ -148,13 +148,13 @@
         }
 
         rows.forEach(row => {
-            const type = row.querySelector('.type-select').value;
+            let type = row.querySelector('.type-select').value;
             const drugInput = row.querySelector('.drug-name');
             let drug = drugInput.value.trim().toLowerCase();
             const startStr = row.querySelector('.start-time').value;
             const stopStr = row.querySelector('.stop-time').value;
 
-            // Save row state to memory array
+            // Save row state to memory array (uses original values)
             stateToSave.push({ type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
             if (!drug && startStr) {
@@ -170,7 +170,16 @@
                 let start = timeToMinutes(startStr);
                 let stop = type === 'injection' ? start : timeToMinutes(stopStr);
                 if (stop < start) stop += (24 * 60); 
-                treatments.push({ type, drug, start, stop, duration: stop - start });
+                
+                let duration = stop - start;
+
+                // --- THE NEW RULE: Downcode short infusions to IV Pushes ---
+                if (type === 'infusion' && duration < 16) {
+                    type = 'injection';
+                    drug = drug + " (short infusion)"; // Tags it so the auditor knows why it moved
+                }
+
+                treatments.push({ type, drug, start, stop, duration });
             }
         });
 
