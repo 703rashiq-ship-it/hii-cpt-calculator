@@ -134,19 +134,16 @@
         }
     }
 
-    // STRICT 24-HOUR AUTO-FORMATTER (Fixes the 2 o'clock glitch)
     function formatTime(input) {
         let val = input.value.replace(/\D/g, ''); 
         
         if (val.length > 4) val = val.substring(0, 4); 
         
-        // Clamp Hours to max 23
         if (val.length >= 2) {
             let hours = parseInt(val.substring(0, 2), 10);
             if (hours > 23) val = '23' + val.substring(2);
         }
         
-        // Clamp Minutes to max 59
         if (val.length >= 4) {
             let mins = parseInt(val.substring(2, 4), 10);
             if (mins > 59) val = val.substring(0, 2) + '59';
@@ -261,7 +258,6 @@
 
             rowsToSave.push({ dos: dosStr, type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
-            // Dark Theme error state for empty drug name
             if (!drug && startStr.length === 5) {
                 drugInput.style.border = "2px solid #ff0000";
                 drugInput.style.backgroundColor = "#4a0000";
@@ -472,15 +468,27 @@
         document.getElementById('injectionResult').innerHTML = renderList(injCodes);
         document.getElementById('hydrationResult').innerHTML = renderList(hydCodes);
 
+        // --- RENDER DOS - CPT - UNITS SUMMARY (STRICT HIERARCHY SORT) ---
         let tallyHTML = "";
         let sortedDates = Object.keys(finalTallies).sort();
         
+        // Define hierarchy: Infusion -> Injection -> Hydration
+        const cptHierarchy = ['96365', '96366', '96367', '96368', '96374', '96375', '96376', '96360', '96361'];
+
         if (sortedDates.length === 0) {
             tallyHTML = "<li>--</li>";
         } else {
             sortedDates.forEach(dos => {
                 let codesOnDate = finalTallies[dos];
-                let sortedCodes = Object.keys(codesOnDate).sort();
+                
+                // Sort by hierarchy index instead of alphabetically
+                let sortedCodes = Object.keys(codesOnDate).sort((a, b) => {
+                    let indexA = cptHierarchy.indexOf(a);
+                    let indexB = cptHierarchy.indexOf(b);
+                    if (indexA === -1) indexA = 999; 
+                    if (indexB === -1) indexB = 999;
+                    return indexA - indexB;
+                });
                 
                 sortedCodes.forEach(code => {
                     let units = codesOnDate[code];
