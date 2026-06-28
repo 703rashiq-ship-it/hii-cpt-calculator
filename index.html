@@ -12,8 +12,8 @@
         
         /* Panels with subtle glowing borders */
         .input-panel { flex: 2.1; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #c21807; box-shadow: 0 0 15px rgba(194, 24, 7, 0.15); }
-        .detail-panel { flex: 1.2; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #ffcc00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.15); position: sticky; top: 20px; }
-        .summary-panel { flex: 1.3; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #c21807; box-shadow: 0 0 15px rgba(194, 24, 7, 0.15); position: sticky; top: 20px; }
+        .detail-panel { flex: 1.4; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #ffcc00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.15); position: sticky; top: 20px; }
+        .summary-panel { flex: 1.1; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #c21807; box-shadow: 0 0 15px rgba(194, 24, 7, 0.15); position: sticky; top: 20px; }
         
         h2, h3 { margin-top: 0; color: #ffcc00; text-transform: uppercase; letter-spacing: 1px; }
         
@@ -51,13 +51,14 @@
         .remove-btn { background-color: #1a1a1a; color: #c21807; border: 1px solid #c21807; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; height: 34px; margin-bottom: 1px; transition: all 0.2s;}
         .remove-btn:hover { background-color: #c21807; color: #000; }
         
-        .result-line { margin-bottom: 15px; font-size: 13px; border-bottom: 1px solid #333; padding-bottom: 10px; color: #aaa;}
-        .highlight { font-weight: bold; color: #ffcc00; display: block; font-size: 14px; margin-top: 5px; letter-spacing: 0.5px;}
+        .result-line { margin-bottom: 15px; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 10px; color: #aaa;}
+        .highlight { font-weight: normal; color: #ffcc00; display: block; font-size: 13px; margin-top: 5px; line-height: 1.4;}
         
         .tally-list { font-size: 15px; font-family: monospace; font-weight: bold; color: #ffcc00; list-style: none; padding: 0; margin: 10px 0;}
         .tally-list li { margin-bottom: 8px; padding: 10px; background: #0a0a0a; border-radius: 4px; text-align: left; border: 1px solid #c21807; display: flex; justify-content: space-between; box-shadow: 0 0 8px rgba(194, 24, 7, 0.2);}
         
-        ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 13px; color: #ccc;}
+        ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 13px; color: #e0e0e0;}
+        li { margin-bottom: 6px; }
 
         @media (max-width: 1200px) {
             .app-wrapper { flex-direction: column; }
@@ -79,7 +80,7 @@
         <div class="global-settings">
             <label>Global Cut-Off:</label>
             <input type="date" id="cutOffDate" onchange="calculateAll()" title="Date of Service">
-            <input type="text" id="cutOffTime" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()" title="24-Hour Format (e.g., 1430)" style="width: 80px; text-align: center;">
+            <input type="text" id="cutOffTime" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()" title="24-Hour Format (e.g., 1430)">
         </div>
 
         <div id="rowsContainer"></div>
@@ -92,7 +93,7 @@
 
     <!-- MIDDLE PANEL -->
     <div class="detail-panel">
-        <h3>Detailed Breakdown</h3>
+        <h3>Description</h3>
         <div class="result-line">Infusions:<span class="highlight" id="infusionResult">--</span></div>
         <div class="result-line">IV Pushes:<span class="highlight" id="injectionResult">--</span></div>
         <div class="result-line">Hydration:<span class="highlight" id="hydrationResult">--</span></div>
@@ -136,19 +137,15 @@
 
     function formatTime(input) {
         let val = input.value.replace(/\D/g, ''); 
-        
         if (val.length > 4) val = val.substring(0, 4); 
-        
         if (val.length >= 2) {
             let hours = parseInt(val.substring(0, 2), 10);
             if (hours > 23) val = '23' + val.substring(2);
         }
-        
         if (val.length >= 4) {
             let mins = parseInt(val.substring(2, 4), 10);
             if (mins > 59) val = val.substring(0, 2) + '59';
         }
-
         if (val.length >= 3) {
             input.value = val.substring(0, 2) + ':' + val.substring(2);
         } else {
@@ -223,6 +220,14 @@
         if (isNaN(timeMins)) return null; 
         return Math.floor(timeMins / 60000);
     }
+    
+    // Helper function to turn absolute minutes back into HH:MM strings for the descriptions
+    function getDisplayTime(mins) {
+        let d = new Date(mins * 60000);
+        let h = d.getHours().toString().padStart(2, '0');
+        let m = d.getMinutes().toString().padStart(2, '0');
+        return `${h}${m}`;
+    }
 
     function checkOverlap(start1, stop1, start2, stop2) {
         return Math.max(0, Math.min(stop1, stop2) - Math.max(start1, start2)) > 0;
@@ -251,7 +256,7 @@
         rows.forEach(row => {
             let type = row.querySelector('.type-select').value;
             const drugInput = row.querySelector('.drug-name');
-            let drug = drugInput.value.trim().toLowerCase();
+            let drug = drugInput.value.trim();
             const dosStr = row.querySelector('.dos-date').value;
             const startStr = row.querySelector('.start-time').value;
             let stopStr = row.querySelector('.stop-time').value;
@@ -327,12 +332,12 @@
             let primaryDos = drugGroups[drug].dos;
             if (drugGroups[drug].totalTime >= 16 && !initialInfusion) {
                 initialInfusion = { drug: drug, blocks: drugGroups[drug].blocks };
-                infCodes.push(`96365 (Initial - ${drug}) [DOS: ${primaryDos}]`);
+                infCodes.push(`<strong>96365</strong>: Initial administration of ${drug} (Total time: ${drugGroups[drug].totalTime} mins)`);
                 addTally(primaryDos, '96365', 1);
                 
                 let extraHours = Math.floor((drugGroups[drug].totalTime - 31) / 60);
                 if (extraHours > 0) {
-                    infCodes.push(`96366 x ${extraHours} (Addtl hr - ${drug})`);
+                    infCodes.push(`<strong>96366 x ${extraHours}</strong>: Additional hour(s) of ${drug}`);
                     addTally(primaryDos, '96366', extraHours);
                 }
                 
@@ -356,27 +361,32 @@
 
         remainingDrugs.forEach(grp => {
             let isConcurrent = false;
+            let concurrentWithDrug = "";
+            
             grp.blocks.forEach(b1 => {
                 activeTimeline.forEach(b2 => {
-                    if (checkOverlap(b1.start, b1.stop, b2.start, b2.stop)) isConcurrent = true;
+                    if (checkOverlap(b1.start, b1.stop, b2.start, b2.stop)) {
+                        isConcurrent = true;
+                        concurrentWithDrug = b2.drug;
+                    }
                 });
             });
 
             if (isConcurrent) {
                 if (!concurrentBilled) {
-                    infCodes.push(`96368 (Concurrent - ${grp.drug}) [DOS: ${grp.dos}]`);
+                    infCodes.push(`<strong>96368</strong>: ${grp.drug} concurrent with ${concurrentWithDrug} (Total time: ${grp.totalTime} mins)`);
                     addTally(grp.dos, '96368', 1);
                     concurrentBilled = true; 
                 } else {
-                    infCodes.push(`Not billable (Concurrent max 1 - ${grp.drug})`);
+                    infCodes.push(`<em>Not billable</em>: ${grp.drug} concurrent with ${concurrentWithDrug} (Maximum of one 96368 allowed per encounter)`);
                 }
             } else {
-                infCodes.push(`96367 (Sequential - ${grp.drug}) [DOS: ${grp.dos}]`);
+                infCodes.push(`<strong>96367</strong>: Subsequent administration of ${grp.drug} (Total time: ${grp.totalTime} mins)`);
                 addTally(grp.dos, '96367', 1);
                 
                 let extraHours = Math.floor((grp.totalTime - 31) / 60);
                 if (extraHours > 0) {
-                    infCodes.push(`96366 x ${extraHours} (Addtl hr - ${grp.drug})`);
+                    infCodes.push(`<strong>96366 x ${extraHours}</strong>: Additional hour(s) of ${grp.drug}`);
                     addTally(grp.dos, '96366', extraHours);
                 }
             }
@@ -399,12 +409,12 @@
             blocks.sort((a, b) => a.start - b.start); 
 
             if (!initialInfusion && !firstPushAssigned) {
-                injCodes.push(`96374 (Initial Push - ${drug}) [DOS: ${blocks[0].dos}]`);
+                injCodes.push(`<strong>96374</strong>: Initial IVP of ${drug} at ${getDisplayTime(blocks[0].start)}`);
                 addTally(blocks[0].dos, '96374', 1);
                 firstPushAssigned = true;
                 hasPrimaryPush = true;
             } else {
-                injCodes.push(`96375 (Subsequent Push - ${drug}) [DOS: ${blocks[0].dos}]`);
+                injCodes.push(`<strong>96375</strong>: Subsequent IVP of ${drug} at ${getDisplayTime(blocks[0].start)}`);
                 addTally(blocks[0].dos, '96375', 1);
             }
 
@@ -413,11 +423,13 @@
                 let gap = blocks[i].start - lastBilledTime;
 
                 if (gap >= 31) {
-                    injCodes.push(`96376 (Same drug push - ${drug}) [DOS: ${blocks[i].dos}]`);
+                    injCodes.push(`<strong>96376</strong>: Subsequent same drug IVP of ${drug} at ${getDisplayTime(blocks[i].start)}`);
                     addTally(blocks[i].dos, '96376', 1);
                     lastBilledTime = blocks[i].start; 
                 } else {
-                    injCodes.push(`Not billable (< 31m gap - ${drug})`);
+                    let curT = getDisplayTime(blocks[i].start);
+                    let prevT = getDisplayTime(lastBilledTime);
+                    injCodes.push(`<em>Not billable</em>: IVP of ${drug} at ${curT} not billable because no 31 minute gap between previous IVP (${prevT})`);
                 }
             }
         }
@@ -446,33 +458,32 @@
 
         if (netHydrationMinutes >= 31) {
             if (initialInfusion || hasPrimaryPush) {
-                hydCodes.push(`96361 (Subsequent Hydration - ${netHydrationMinutes}m net) [DOS: ${primaryHydDos}]`);
+                hydCodes.push(`<strong>96361</strong>: Subsequent hydration (Total net time: ${netHydrationMinutes} mins)`);
                 addTally(primaryHydDos, '96361', 1);
             } else {
-                hydCodes.push(`96360 (Initial Hydration - ${netHydrationMinutes}m net) [DOS: ${primaryHydDos}]`);
+                hydCodes.push(`<strong>96360</strong>: Initial hydration (Total net time: ${netHydrationMinutes} mins)`);
                 addTally(primaryHydDos, '96360', 1);
             }
             
             let extraHydHours = Math.floor((netHydrationMinutes - 31) / 60);
             if (extraHydHours > 0) {
-                hydCodes.push(`96361 x ${extraHydHours} (Addtl hr)`);
+                hydCodes.push(`<strong>96361 x ${extraHydHours}</strong>: Additional hydration hour(s)`);
                 addTally(primaryHydDos, '96361', extraHydHours);
             }
         } else if (grossHydTime > 0) {
-            hydCodes.push(`Not billable (Net time ${netHydrationMinutes}m is < 31m)`);
+            hydCodes.push(`<em>Not billable</em>: Net hydration time (${netHydrationMinutes} mins) is less than 31 minutes`);
         }
 
         // --- RENDER OUTPUT ---
-        const renderList = (arr) => arr.length > 0 ? "<ul><li>" + arr.join("</li><li>") + "</li></ul>" : "--";
+        const renderList = (arr) => arr.length > 0 ? "<ul><li>" + arr.join("</li><li>") + "</li></ul>" : "<ul><li>--</li></ul>";
         document.getElementById('infusionResult').innerHTML = renderList(infCodes);
         document.getElementById('injectionResult').innerHTML = renderList(injCodes);
         document.getElementById('hydrationResult').innerHTML = renderList(hydCodes);
 
-        // --- RENDER DOS - CPT - UNITS SUMMARY (STRICT HIERARCHY SORT) ---
+        // --- RENDER DOS - CPT - UNITS SUMMARY ---
         let tallyHTML = "";
         let sortedDates = Object.keys(finalTallies).sort();
         
-        // Define hierarchy: Infusion -> Injection -> Hydration
         const cptHierarchy = ['96365', '96366', '96367', '96368', '96374', '96375', '96376', '96360', '96361'];
 
         if (sortedDates.length === 0) {
@@ -481,7 +492,6 @@
             sortedDates.forEach(dos => {
                 let codesOnDate = finalTallies[dos];
                 
-                // Sort by hierarchy index instead of alphabetically
                 let sortedCodes = Object.keys(codesOnDate).sort((a, b) => {
                     let indexA = cptHierarchy.indexOf(a);
                     let indexB = cptHierarchy.indexOf(b);
