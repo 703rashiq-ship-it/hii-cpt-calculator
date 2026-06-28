@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro HII CPT Calculator (DOS Edition)</title>
+    <title>Pro HII CPT Calculator (DOS Summary Edition)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         
+        /* Adjusted flex proportions to fit DOS strings in the final column */
         .app-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
         
-        .input-panel { flex: 2.5; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .input-panel { flex: 2.1; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .detail-panel { flex: 1.2; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid #95a5a6; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: sticky; top: 20px; }
-        .summary-panel { flex: 0.8; background-color: #e8f4f8; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: sticky; top: 20px; }
+        .summary-panel { flex: 1.3; background-color: #e8f4f8; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: sticky; top: 20px; }
         
         h2, h3 { margin-top: 0; color: #2c3e50; }
         
-        /* Global Settings Bar */
         .global-settings { background-color: #fce4ec; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f8bbd0; display: flex; align-items: center; gap: 15px; }
-        .global-settings label { font-weight: bold; color: #c2185b; }
+        .global-settings label { font-weight: bold; color: #c2185b; font-size: 14px;}
         
         .button-group { margin-top: 20px; display: flex; gap: 10px; }
         .add-btn { background-color: #2ecc71; color: white; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;}
@@ -25,25 +25,24 @@
         .clear-btn { background-color: #f39c12; color: white; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;}
         .clear-btn:hover { background-color: #e67e22; }
         
-        .treatment-row { display: flex; gap: 10px; background: #fdfdfd; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; align-items: center;}
-        select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .treatment-row { display: flex; gap: 8px; background: #fdfdfd; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; align-items: center;}
+        select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; } /* Slightly smaller text for inputs */
         
-        /* Force inputs to look unified */
         input[type="date"], input[type="time"] { font-family: monospace; }
         
-        .drug-name { flex: 1; min-width: 120px; transition: border 0.3s; }
+        .drug-name { flex: 1; min-width: 100px; transition: border 0.3s; }
         .remove-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .remove-btn:hover { background-color: #c0392b; }
         
-        .result-line { margin-bottom: 15px; font-size: 14px; border-bottom: 1px solid #ccc; padding-bottom: 10px;}
-        .highlight { font-weight: bold; color: #2c3e50; display: block; font-size: 15px; margin-top: 5px;}
+        .result-line { margin-bottom: 15px; font-size: 13px; border-bottom: 1px solid #ccc; padding-bottom: 10px;}
+        .highlight { font-weight: bold; color: #2c3e50; display: block; font-size: 14px; margin-top: 5px;}
         
-        .tally-list { font-size: 22px; font-weight: bold; color: #2980b9; list-style: none; padding: 0; margin: 10px 0;}
-        .tally-list li { margin-bottom: 10px; padding: 10px; background: #fff; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; border: 1px solid #d6eaf8;}
+        /* Shrunk font size to perfectly fit DOS - CPT - Units */
+        .tally-list { font-size: 15px; font-family: monospace; font-weight: bold; color: #2980b9; list-style: none; padding: 0; margin: 10px 0;}
+        .tally-list li { margin-bottom: 8px; padding: 10px; background: #fff; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: left; border: 1px solid #d6eaf8; display: flex; justify-content: space-between;}
         
         ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 13px; color: #2c3e50;}
 
-        /* Mobile Responsiveness */
         @media (max-width: 1200px) {
             .app-wrapper { flex-direction: column; }
             .input-panel, .detail-panel, .summary-panel { width: 100%; position: static; box-sizing: border-box; }
@@ -60,10 +59,9 @@
         <h2>Treatment Log</h2>
         
         <div class="global-settings">
-            <label>Global Cut-Off Time:</label>
+            <label>Global Cut-Off:</label>
             <input type="date" id="cutOffDate" onchange="calculateAll()" title="Date of Service">
             <input type="time" id="cutOffTime" onchange="calculateAll()" title="24-Hour Format">
-            <span style="font-size: 12px; color: #c2185b;">(Applies to all active treatments)</span>
         </div>
 
         <div id="rowsContainer"></div>
@@ -120,14 +118,12 @@
         const container = document.getElementById('rowsContainer');
         const rowId = 'row_' + Date.now();
         
-        // Auto-carry previous Date of Service if it exists
         let defaultDos = '';
         if (!data) {
             const existingDates = document.querySelectorAll('.dos-date');
             if (existingDates.length > 0) {
                 defaultDos = existingDates[existingDates.length - 1].value;
             } else {
-                // Failsafe to today's date if completely blank
                 const today = new Date();
                 const offset = today.getTimezoneOffset() * 60000;
                 defaultDos = (new Date(today - offset)).toISOString().split('T')[0];
@@ -148,10 +144,10 @@
                     <option value="injection" ${typeVal === 'injection' ? 'selected' : ''}>IV Push</option>
                 </select>
                 <input type="text" class="drug-name" placeholder="Drug Name" value="${drugVal}" oninput="calculateAll()">
-                <input type="date" class="dos-date" value="${dosVal}" onchange="calculateAll()" title="Date of Service">
-                <input type="time" class="start-time" value="${startVal}" oninput="calculateAll()" title="Start (24h)">
+                <input type="date" class="dos-date" value="${dosVal}" onchange="calculateAll()">
+                <input type="time" class="start-time" value="${startVal}" oninput="calculateAll()">
                 <span class="to-text">to</span>
-                <input type="time" class="stop-time" value="${stopVal}" oninput="calculateAll()" title="Stop (24h)">
+                <input type="time" class="stop-time" value="${stopVal}" oninput="calculateAll()">
                 <button class="remove-btn" onclick="removeRow('${rowId}')">X</button>
             </div>
         `;
@@ -163,7 +159,6 @@
         calculateAll();
     }
 
-    // New Absolute Minute Converter
     function getAbsoluteMinutes(dateStr, timeStr) {
         if (!dateStr || !timeStr) return null;
         return Math.floor(new Date(`${dateStr}T${timeStr}`).getTime() / 60000);
@@ -178,7 +173,6 @@
         let treatments = [];
         let rowsToSave = []; 
         
-        // 1. Process Global Cut-Off Time
         const cutOffDateStr = document.getElementById('cutOffDate').value;
         const cutOffTimeStr = document.getElementById('cutOffTime').value;
         let globalCutOffMins = null;
@@ -186,12 +180,15 @@
             globalCutOffMins = getAbsoluteMinutes(cutOffDateStr, cutOffTimeStr);
         }
 
-        let finalTallies = {};
-        function addTally(code, count) {
-            if (count > 0) finalTallies[code] = (finalTallies[code] || 0) + count;
+        // --- NEW DOS-BASED TALLY SYSTEM ---
+        let finalTallies = {}; 
+        function addTally(dos, code, count) {
+            if (count > 0 && dos) {
+                if (!finalTallies[dos]) finalTallies[dos] = {};
+                finalTallies[dos][code] = (finalTallies[dos][code] || 0) + count;
+            }
         }
 
-        // 2. Map All Data Rows
         rows.forEach(row => {
             let type = row.querySelector('.type-select').value;
             const drugInput = row.querySelector('.drug-name');
@@ -220,19 +217,17 @@
                 } else {
                     if (stopStr) {
                         stop = getAbsoluteMinutes(dosStr, stopStr);
-                        if (stop < start) stop += (24 * 60); // Fixes cross-midnight if logged on same DOS
+                        if (stop < start) stop += (24 * 60); 
                     } 
-                    // If no stop time provided, see if Cut-Off can provide it
                     if (!stopStr && globalCutOffMins) {
                         stop = globalCutOffMins;
                     }
                 }
 
-                // Apply Cut-Off logic
                 if (globalCutOffMins) {
-                    if (start > globalCutOffMins) return; // Skip entirely if started after cut-off
+                    if (start > globalCutOffMins) return; 
                     if (stop !== null && stop > globalCutOffMins) {
-                        stop = globalCutOffMins; // Force stop at cut-off
+                        stop = globalCutOffMins; 
                     }
                 }
 
@@ -247,7 +242,6 @@
             }
         });
 
-        // Save State
         localStorage.setItem('hiiCalculatorStateDOS', JSON.stringify({
             global: { cutOffDate: cutOffDateStr, cutOffTime: cutOffTimeStr },
             rows: rowsToSave
@@ -275,12 +269,12 @@
             if (drugGroups[drug].totalTime >= 16 && !initialInfusion) {
                 initialInfusion = { drug: drug, blocks: drugGroups[drug].blocks };
                 infCodes.push(`96365 (Initial - ${drug}) [DOS: ${primaryDos}]`);
-                addTally('96365', 1);
+                addTally(primaryDos, '96365', 1);
                 
                 let extraHours = Math.floor((drugGroups[drug].totalTime - 31) / 60);
                 if (extraHours > 0) {
                     infCodes.push(`96366 x ${extraHours} (Addtl hr - ${drug})`);
-                    addTally('96366', extraHours);
+                    addTally(primaryDos, '96366', extraHours);
                 }
                 
                 activeTimeline = activeTimeline.concat(drugGroups[drug].blocks);
@@ -312,19 +306,19 @@
             if (isConcurrent) {
                 if (!concurrentBilled) {
                     infCodes.push(`96368 (Concurrent - ${grp.drug}) [DOS: ${grp.dos}]`);
-                    addTally('96368', 1);
+                    addTally(grp.dos, '96368', 1);
                     concurrentBilled = true; 
                 } else {
                     infCodes.push(`Not billable (Concurrent max 1 - ${grp.drug})`);
                 }
             } else {
                 infCodes.push(`96367 (Sequential - ${grp.drug}) [DOS: ${grp.dos}]`);
-                addTally('96367', 1);
+                addTally(grp.dos, '96367', 1);
                 
                 let extraHours = Math.floor((grp.totalTime - 31) / 60);
                 if (extraHours > 0) {
                     infCodes.push(`96366 x ${extraHours} (Addtl hr - ${grp.drug})`);
-                    addTally('96366', extraHours);
+                    addTally(grp.dos, '96366', extraHours);
                 }
             }
             activeTimeline = activeTimeline.concat(grp.blocks);
@@ -347,12 +341,12 @@
 
             if (!initialInfusion && !firstPushAssigned) {
                 injCodes.push(`96374 (Initial Push - ${drug}) [DOS: ${blocks[0].dos}]`);
-                addTally('96374', 1);
+                addTally(blocks[0].dos, '96374', 1);
                 firstPushAssigned = true;
                 hasPrimaryPush = true;
             } else {
                 injCodes.push(`96375 (Subsequent Push - ${drug}) [DOS: ${blocks[0].dos}]`);
-                addTally('96375', 1);
+                addTally(blocks[0].dos, '96375', 1);
             }
 
             let lastBilledTime = blocks[0].start; 
@@ -361,7 +355,7 @@
 
                 if (gap >= 31) {
                     injCodes.push(`96376 (Same drug push - ${drug}) [DOS: ${blocks[i].dos}]`);
-                    addTally('96376', 1);
+                    addTally(blocks[i].dos, '96376', 1);
                     lastBilledTime = blocks[i].start; 
                 } else {
                     injCodes.push(`Not billable (< 31m gap - ${drug})`);
@@ -375,7 +369,6 @@
         let primaryHydDos = hydrations.length > 0 ? hydrations[0].dos : null;
         let infusionMinutes = new Set();
         
-        // Uses absolute minute numbers directly
         activeTimeline.forEach(block => {
             for (let m = block.start; m < block.stop; m++) infusionMinutes.add(m);
         });
@@ -395,16 +388,16 @@
         if (netHydrationMinutes >= 31) {
             if (initialInfusion || hasPrimaryPush) {
                 hydCodes.push(`96361 (Subsequent Hydration - ${netHydrationMinutes}m net) [DOS: ${primaryHydDos}]`);
-                addTally('96361', 1);
+                addTally(primaryHydDos, '96361', 1);
             } else {
                 hydCodes.push(`96360 (Initial Hydration - ${netHydrationMinutes}m net) [DOS: ${primaryHydDos}]`);
-                addTally('96360', 1);
+                addTally(primaryHydDos, '96360', 1);
             }
             
             let extraHydHours = Math.floor((netHydrationMinutes - 31) / 60);
             if (extraHydHours > 0) {
                 hydCodes.push(`96361 x ${extraHydHours} (Addtl hr)`);
-                addTally('96361', extraHydHours);
+                addTally(primaryHydDos, '96361', extraHydHours);
             }
         } else if (grossHydTime > 0) {
             hydCodes.push(`Not billable (Net time ${netHydrationMinutes}m is < 31m)`);
@@ -416,19 +409,22 @@
         document.getElementById('injectionResult').innerHTML = renderList(injCodes);
         document.getElementById('hydrationResult').innerHTML = renderList(hydCodes);
 
+        // --- RENDER DOS - CPT - UNITS SUMMARY ---
         let tallyHTML = "";
-        let sortedCodes = Object.keys(finalTallies).sort();
+        let sortedDates = Object.keys(finalTallies).sort();
         
-        if (sortedCodes.length === 0) {
+        if (sortedDates.length === 0) {
             tallyHTML = "<li>--</li>";
         } else {
-            sortedCodes.forEach(code => {
-                let count = finalTallies[code];
-                if (count > 1) {
-                    tallyHTML += `<li>${code} * ${count}</li>`;
-                } else {
-                    tallyHTML += `<li>${code}</li>`;
-                }
+            sortedDates.forEach(dos => {
+                let codesOnDate = finalTallies[dos];
+                let sortedCodes = Object.keys(codesOnDate).sort();
+                
+                sortedCodes.forEach(code => {
+                    let units = codesOnDate[code];
+                    let unitText = units > 1 ? 'Units' : 'Unit';
+                    tallyHTML += `<li><span>${dos}</span> <span>${code}</span> <span>${units} ${unitText}</span></li>`;
+                });
             });
         }
         document.getElementById('tallyResult').innerHTML = tallyHTML;
