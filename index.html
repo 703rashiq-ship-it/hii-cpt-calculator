@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro HII CPT Calculator (Final)</title>
+    <title>Pro HII CPT Calculator (DOS Edition)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         
@@ -15,14 +15,22 @@
         
         h2, h3 { margin-top: 0; color: #2c3e50; }
         
-        .button-group { margin-bottom: 20px; }
-        .add-btn { background-color: #2ecc71; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        /* Global Settings Bar */
+        .global-settings { background-color: #fce4ec; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f8bbd0; display: flex; align-items: center; gap: 15px; }
+        .global-settings label { font-weight: bold; color: #c2185b; }
+        
+        .button-group { margin-top: 20px; display: flex; gap: 10px; }
+        .add-btn { background-color: #2ecc71; color: white; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;}
         .add-btn:hover { background-color: #27ae60; }
-        .clear-btn { background-color: #f39c12; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .clear-btn { background-color: #f39c12; color: white; border: none; padding: 12px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;}
         .clear-btn:hover { background-color: #e67e22; }
         
         .treatment-row { display: flex; gap: 10px; background: #fdfdfd; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; align-items: center;}
         select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        /* Force inputs to look unified */
+        input[type="date"], input[type="time"] { font-family: monospace; }
+        
         .drug-name { flex: 1; min-width: 120px; transition: border 0.3s; }
         .remove-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .remove-btn:hover { background-color: #c0392b; }
@@ -36,7 +44,7 @@
         ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 13px; color: #2c3e50;}
 
         /* Mobile Responsiveness */
-        @media (max-width: 1000px) {
+        @media (max-width: 1200px) {
             .app-wrapper { flex-direction: column; }
             .input-panel, .detail-panel, .summary-panel { width: 100%; position: static; box-sizing: border-box; }
             .treatment-row { flex-wrap: wrap; }
@@ -50,18 +58,27 @@
 <div class="app-wrapper">
     <div class="input-panel">
         <h2>Treatment Log</h2>
+        
+        <div class="global-settings">
+            <label>Global Cut-Off Time:</label>
+            <input type="date" id="cutOffDate" onchange="calculateAll()" title="Date of Service">
+            <input type="time" id="cutOffTime" onchange="calculateAll()" title="24-Hour Format">
+            <span style="font-size: 12px; color: #c2185b;">(Applies to all active treatments)</span>
+        </div>
+
+        <div id="rowsContainer"></div>
+        
         <div class="button-group">
-            <button class="add-btn" onclick="addRow()">+ Add New Treatment</button>
+            <button class="add-btn" onclick="addRow()">+ Add Administration</button>
             <button class="clear-btn" onclick="clearAll()">Clear All</button>
         </div>
-        <div id="rowsContainer"></div>
     </div>
 
     <div class="detail-panel">
         <h3>Detailed Breakdown</h3>
-        <div class="result-line">Infusions: <span class="highlight" id="infusionResult">--</span></div>
-        <div class="result-line">Hydration: <span class="highlight" id="hydrationResult">--</span></div>
-        <div class="result-line">IV Pushes: <span class="highlight" id="injectionResult">--</span></div>
+        <div class="result-line">Infusions:<span class="highlight" id="infusionResult">--</span></div>
+        <div class="result-line">IV Pushes:<span class="highlight" id="injectionResult">--</span></div>
+        <div class="result-line">Hydration:<span class="highlight" id="hydrationResult">--</span></div>
     </div>
 
     <div class="summary-panel">
@@ -71,35 +88,53 @@
 </div>
 
 <script>
-    // 1. Check browser memory when page loads
     window.onload = function() {
-        const savedData = localStorage.getItem('hiiCalculatorState');
+        const savedData = localStorage.getItem('hiiCalculatorStateDOS');
         if (savedData) {
             const parsedData = JSON.parse(savedData);
-            if (parsedData.length > 0) {
-                parsedData.forEach(item => addRow(item));
+            if (parsedData.global) {
+                document.getElementById('cutOffDate').value = parsedData.global.cutOffDate || '';
+                document.getElementById('cutOffTime').value = parsedData.global.cutOffTime || '';
+            }
+            if (parsedData.rows && parsedData.rows.length > 0) {
+                parsedData.rows.forEach(item => addRow(item));
                 calculateAll();
                 return;
             }
         }
-        addRow(); // Start fresh if memory is empty
+        addRow(); 
     };
 
-    // 2. Clear All Function
     function clearAll() {
-        if (confirm("Are you sure you want to clear all treatments for this encounter?")) {
-            localStorage.removeItem('hiiCalculatorState');
+        if (confirm("Are you sure you want to clear all treatments?")) {
+            localStorage.removeItem('hiiCalculatorStateDOS');
             document.getElementById('rowsContainer').innerHTML = '';
+            document.getElementById('cutOffDate').value = '';
+            document.getElementById('cutOffTime').value = '';
             addRow();
             calculateAll();
         }
     }
 
-    // 3. Add Row (Now accepts saved data)
     function addRow(data = null) {
         const container = document.getElementById('rowsContainer');
-        const rowId = 'row_' + Date.now() + Math.random().toString(36).substr(2, 5);
+        const rowId = 'row_' + Date.now();
         
+        // Auto-carry previous Date of Service if it exists
+        let defaultDos = '';
+        if (!data) {
+            const existingDates = document.querySelectorAll('.dos-date');
+            if (existingDates.length > 0) {
+                defaultDos = existingDates[existingDates.length - 1].value;
+            } else {
+                // Failsafe to today's date if completely blank
+                const today = new Date();
+                const offset = today.getTimezoneOffset() * 60000;
+                defaultDos = (new Date(today - offset)).toISOString().split('T')[0];
+            }
+        }
+
+        const dosVal = data ? data.dos : defaultDos;
         const typeVal = data ? data.type : 'infusion';
         const drugVal = data ? data.drug : '';
         const startVal = data ? data.start : '';
@@ -108,14 +143,15 @@
         const rowHTML = `
             <div class="treatment-row" id="${rowId}">
                 <select class="type-select" onchange="calculateAll()">
-                    <option value="infusion" ${typeVal === 'infusion' ? 'selected' : ''}>Infusion (Therap/Proph)</option>
+                    <option value="infusion" ${typeVal === 'infusion' ? 'selected' : ''}>Infusion</option>
                     <option value="hydration" ${typeVal === 'hydration' ? 'selected' : ''}>Hydration</option>
                     <option value="injection" ${typeVal === 'injection' ? 'selected' : ''}>IV Push</option>
                 </select>
-                <input type="text" class="drug-name" placeholder="Drug Name (Required)" value="${drugVal}" oninput="calculateAll()">
-                <input type="time" class="start-time" value="${startVal}" oninput="calculateAll()">
+                <input type="text" class="drug-name" placeholder="Drug Name" value="${drugVal}" oninput="calculateAll()">
+                <input type="date" class="dos-date" value="${dosVal}" onchange="calculateAll()" title="Date of Service">
+                <input type="time" class="start-time" value="${startVal}" oninput="calculateAll()" title="Start (24h)">
                 <span class="to-text">to</span>
-                <input type="time" class="stop-time" value="${stopVal}" oninput="calculateAll()">
+                <input type="time" class="stop-time" value="${stopVal}" oninput="calculateAll()" title="Stop (24h)">
                 <button class="remove-btn" onclick="removeRow('${rowId}')">X</button>
             </div>
         `;
@@ -127,10 +163,10 @@
         calculateAll();
     }
 
-    function timeToMinutes(timeStr) {
-        if (!timeStr) return 0;
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return (hours * 60) + minutes;
+    // New Absolute Minute Converter
+    function getAbsoluteMinutes(dateStr, timeStr) {
+        if (!dateStr || !timeStr) return null;
+        return Math.floor(new Date(`${dateStr}T${timeStr}`).getTime() / 60000);
     }
 
     function checkOverlap(start1, stop1, start2, stop2) {
@@ -140,57 +176,88 @@
     function calculateAll() {
         const rows = document.querySelectorAll('.treatment-row');
         let treatments = [];
-        let stateToSave = []; // Array to hold data for browser memory
+        let rowsToSave = []; 
         
+        // 1. Process Global Cut-Off Time
+        const cutOffDateStr = document.getElementById('cutOffDate').value;
+        const cutOffTimeStr = document.getElementById('cutOffTime').value;
+        let globalCutOffMins = null;
+        if (cutOffDateStr && cutOffTimeStr) {
+            globalCutOffMins = getAbsoluteMinutes(cutOffDateStr, cutOffTimeStr);
+        }
+
         let finalTallies = {};
         function addTally(code, count) {
             if (count > 0) finalTallies[code] = (finalTallies[code] || 0) + count;
         }
 
+        // 2. Map All Data Rows
         rows.forEach(row => {
             let type = row.querySelector('.type-select').value;
             const drugInput = row.querySelector('.drug-name');
             let drug = drugInput.value.trim().toLowerCase();
+            const dosStr = row.querySelector('.dos-date').value;
             const startStr = row.querySelector('.start-time').value;
-            const stopStr = row.querySelector('.stop-time').value;
+            let stopStr = row.querySelector('.stop-time').value;
 
-            // Save row state to memory array (uses original values)
-            stateToSave.push({ type: type, drug: drugInput.value, start: startStr, stop: stopStr });
+            rowsToSave.push({ dos: dosStr, type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
             if (!drug && startStr) {
                 drugInput.style.border = "2px solid #e74c3c";
                 drugInput.style.backgroundColor = "#fadbd8";
-                drug = "unnamed_row_" + Array.from(rows).indexOf(row);
+                drug = "unnamed"; 
             } else {
                 drugInput.style.border = "1px solid #ccc";
                 drugInput.style.backgroundColor = "#fff";
             }
 
-            if (startStr && (stopStr || type === 'injection')) {
-                let start = timeToMinutes(startStr);
-                let stop = type === 'injection' ? start : timeToMinutes(stopStr);
-                if (stop < start) stop += (24 * 60); 
-                
-                let duration = stop - start;
+            if (dosStr && startStr) {
+                let start = getAbsoluteMinutes(dosStr, startStr);
+                let stop = null;
 
-                // --- THE NEW RULE: Downcode short infusions to IV Pushes ---
-                if (type === 'infusion' && duration < 16) {
-                    type = 'injection';
-                    drug = drug + " (short infusion)"; // Tags it so the auditor knows why it moved
+                if (type === 'injection') {
+                    stop = start;
+                } else {
+                    if (stopStr) {
+                        stop = getAbsoluteMinutes(dosStr, stopStr);
+                        if (stop < start) stop += (24 * 60); // Fixes cross-midnight if logged on same DOS
+                    } 
+                    // If no stop time provided, see if Cut-Off can provide it
+                    if (!stopStr && globalCutOffMins) {
+                        stop = globalCutOffMins;
+                    }
                 }
 
-                treatments.push({ type, drug, start, stop, duration });
+                // Apply Cut-Off logic
+                if (globalCutOffMins) {
+                    if (start > globalCutOffMins) return; // Skip entirely if started after cut-off
+                    if (stop !== null && stop > globalCutOffMins) {
+                        stop = globalCutOffMins; // Force stop at cut-off
+                    }
+                }
+
+                if (start !== null && stop !== null) {
+                    let duration = stop - start;
+                    if (type === 'infusion' && duration < 16) {
+                        type = 'injection';
+                        drug += " (short)";
+                    }
+                    treatments.push({ type, drug, start, stop, duration, dos: dosStr });
+                }
             }
         });
 
-        // Save data to browser memory
-        localStorage.setItem('hiiCalculatorState', JSON.stringify(stateToSave));
+        // Save State
+        localStorage.setItem('hiiCalculatorStateDOS', JSON.stringify({
+            global: { cutOffDate: cutOffDateStr, cutOffTime: cutOffTimeStr },
+            rows: rowsToSave
+        }));
 
         let infusions = treatments.filter(t => t.type === 'infusion');
         let hydrations = treatments.filter(t => t.type === 'hydration');
         let injections = treatments.filter(t => t.type === 'injection');
 
-        // --- INFUSION LOGIC ---
+        // --- HIERARCHY 1: INFUSION LOGIC ---
         let infCodes = [];
         let initialInfusion = null;
         let concurrentBilled = false;
@@ -198,15 +265,16 @@
         
         let drugGroups = {};
         infusions.forEach(inf => {
-            if (!drugGroups[inf.drug]) drugGroups[inf.drug] = { totalTime: 0, blocks: [] };
+            if (!drugGroups[inf.drug]) drugGroups[inf.drug] = { totalTime: 0, blocks: [], dos: inf.dos };
             drugGroups[inf.drug].totalTime += inf.duration;
             drugGroups[inf.drug].blocks.push(inf);
         });
 
         for (let drug in drugGroups) {
+            let primaryDos = drugGroups[drug].dos;
             if (drugGroups[drug].totalTime >= 16 && !initialInfusion) {
                 initialInfusion = { drug: drug, blocks: drugGroups[drug].blocks };
-                infCodes.push("96365 (Initial - " + drug + ")");
+                infCodes.push(`96365 (Initial - ${drug}) [DOS: ${primaryDos}]`);
                 addTally('96365', 1);
                 
                 let extraHours = Math.floor((drugGroups[drug].totalTime - 31) / 60);
@@ -227,6 +295,7 @@
                 drug: drug,
                 blocks: drugGroups[drug].blocks,
                 totalTime: drugGroups[drug].totalTime,
+                dos: drugGroups[drug].dos,
                 earliestStart: Math.min(...drugGroups[drug].blocks.map(b => b.start))
             });
         }
@@ -234,7 +303,6 @@
 
         remainingDrugs.forEach(grp => {
             let isConcurrent = false;
-
             grp.blocks.forEach(b1 => {
                 activeTimeline.forEach(b2 => {
                     if (checkOverlap(b1.start, b1.stop, b2.start, b2.stop)) isConcurrent = true;
@@ -243,14 +311,14 @@
 
             if (isConcurrent) {
                 if (!concurrentBilled) {
-                    infCodes.push("96368 (Concurrent - " + grp.drug + ")");
+                    infCodes.push(`96368 (Concurrent - ${grp.drug}) [DOS: ${grp.dos}]`);
                     addTally('96368', 1);
                     concurrentBilled = true; 
                 } else {
-                    infCodes.push("Not billable (Concurrent max 1 - " + grp.drug + ")");
+                    infCodes.push(`Not billable (Concurrent max 1 - ${grp.drug})`);
                 }
             } else {
-                infCodes.push("96367 (Sequential - " + grp.drug + ")");
+                infCodes.push(`96367 (Sequential - ${grp.drug}) [DOS: ${grp.dos}]`);
                 addTally('96367', 1);
                 
                 let extraHours = Math.floor((grp.totalTime - 31) / 60);
@@ -262,13 +330,54 @@
             activeTimeline = activeTimeline.concat(grp.blocks);
         });
 
-        // --- HYDRATION LOGIC ---
+        // --- HIERARCHY 2: INJECTION LOGIC ---
+        let injCodes = [];
+        let hasPrimaryPush = false;
+        let firstPushAssigned = false;
+
+        let injDrugGroups = {};
+        injections.forEach(inj => {
+            if (!injDrugGroups[inj.drug]) injDrugGroups[inj.drug] = [];
+            injDrugGroups[inj.drug].push(inj);
+        });
+
+        for (let drug in injDrugGroups) {
+            let blocks = injDrugGroups[drug];
+            blocks.sort((a, b) => a.start - b.start); 
+
+            if (!initialInfusion && !firstPushAssigned) {
+                injCodes.push(`96374 (Initial Push - ${drug}) [DOS: ${blocks[0].dos}]`);
+                addTally('96374', 1);
+                firstPushAssigned = true;
+                hasPrimaryPush = true;
+            } else {
+                injCodes.push(`96375 (Subsequent Push - ${drug}) [DOS: ${blocks[0].dos}]`);
+                addTally('96375', 1);
+            }
+
+            let lastBilledTime = blocks[0].start; 
+            for (let i = 1; i < blocks.length; i++) {
+                let gap = blocks[i].start - lastBilledTime;
+
+                if (gap >= 31) {
+                    injCodes.push(`96376 (Same drug push - ${drug}) [DOS: ${blocks[i].dos}]`);
+                    addTally('96376', 1);
+                    lastBilledTime = blocks[i].start; 
+                } else {
+                    injCodes.push(`Not billable (< 31m gap - ${drug})`);
+                }
+            }
+        }
+
+        // --- HIERARCHY 3: HYDRATION LOGIC ---
         let hydCodes = [];
         let grossHydTime = hydrations.reduce((sum, h) => sum + h.duration, 0);
+        let primaryHydDos = hydrations.length > 0 ? hydrations[0].dos : null;
         let infusionMinutes = new Set();
         
+        // Uses absolute minute numbers directly
         activeTimeline.forEach(block => {
-            for (let m = block.start; m < block.stop; m++) infusionMinutes.add(m % (24 * 60));
+            for (let m = block.start; m < block.stop; m++) infusionMinutes.add(m);
         });
 
         let netHydrationMinutes = 0;
@@ -276,20 +385,19 @@
 
         hydrations.forEach(hyd => {
             for (let m = hyd.start; m < hyd.stop; m++) {
-                let actualM = m % (24 * 60);
-                if (!infusionMinutes.has(actualM) && !countedHydrationMinutes.has(actualM)) {
-                    countedHydrationMinutes.add(actualM);
+                if (!infusionMinutes.has(m) && !countedHydrationMinutes.has(m)) {
+                    countedHydrationMinutes.add(m);
                     netHydrationMinutes++;
                 }
             }
         });
 
         if (netHydrationMinutes >= 31) {
-            if (initialInfusion) {
-                hydCodes.push(`96361 (Subsequent Hydration - ${netHydrationMinutes}m net)`);
+            if (initialInfusion || hasPrimaryPush) {
+                hydCodes.push(`96361 (Subsequent Hydration - ${netHydrationMinutes}m net) [DOS: ${primaryHydDos}]`);
                 addTally('96361', 1);
             } else {
-                hydCodes.push(`96360 (Initial Hydration - ${netHydrationMinutes}m net)`);
+                hydCodes.push(`96360 (Initial Hydration - ${netHydrationMinutes}m net) [DOS: ${primaryHydDos}]`);
                 addTally('96360', 1);
             }
             
@@ -302,50 +410,11 @@
             hydCodes.push(`Not billable (Net time ${netHydrationMinutes}m is < 31m)`);
         }
 
-        // --- INJECTION LOGIC ---
-        let injCodes = [];
-        let hasPrimary = initialInfusion !== null || netHydrationMinutes >= 31;
-        let firstPushAssigned = false;
-
-        let injDrugGroups = {};
-        injections.forEach(inj => {
-            if (!injDrugGroups[inj.drug]) injDrugGroups[inj.drug] = [];
-            injDrugGroups[inj.drug].push(inj.start);
-        });
-
-        for (let drug in injDrugGroups) {
-            let times = injDrugGroups[drug];
-            times.sort((a, b) => a - b); 
-
-            if (!hasPrimary && !firstPushAssigned) {
-                injCodes.push("96374 (Initial Push - " + drug + ")");
-                addTally('96374', 1);
-                firstPushAssigned = true;
-            } else {
-                injCodes.push("96375 (Subsequent Push - " + drug + ")");
-                addTally('96375', 1);
-            }
-
-            let lastBilledTime = times[0]; 
-            for (let i = 1; i < times.length; i++) {
-                let gap = times[i] - lastBilledTime;
-                if (gap < 0) gap += (24 * 60); 
-
-                if (gap >= 31) {
-                    injCodes.push("96376 (Same drug push - " + drug + ")");
-                    addTally('96376', 1);
-                    lastBilledTime = times[i]; 
-                } else {
-                    injCodes.push(`Not billable (< 31m gap - ${drug})`);
-                }
-            }
-        }
-
         // --- RENDER OUTPUT ---
         const renderList = (arr) => arr.length > 0 ? "<ul><li>" + arr.join("</li><li>") + "</li></ul>" : "--";
         document.getElementById('infusionResult').innerHTML = renderList(infCodes);
-        document.getElementById('hydrationResult').innerHTML = renderList(hydCodes);
         document.getElementById('injectionResult').innerHTML = renderList(injCodes);
+        document.getElementById('hydrationResult').innerHTML = renderList(hydCodes);
 
         let tallyHTML = "";
         let sortedCodes = Object.keys(finalTallies).sort();
