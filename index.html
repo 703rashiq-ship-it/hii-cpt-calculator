@@ -3,61 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro HII CPT Calculator (Iron Man Edition)</title>
+    <title>Retro HII CPT Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* IRON MAN THEME: Deep Black, Armor Red (#c21807), and Gold (#ffcc00) */
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #050505; color: #ffcc00; margin: 0; padding: 20px; }
+        :root {
+            --lcd-bg: #E5D375;
+            --lcd-ink: #111111;
+        }
+
+        /* Phone body casing */
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #1a1e24; 
+            color: var(--lcd-ink); 
+            margin: 0; 
+            padding: 20px; 
+        }
         
-        .app-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
+        .app-wrapper { 
+            display: flex; 
+            gap: 20px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            align-items: flex-start; 
+        }
         
-        /* Panels with subtle glowing borders */
-        .input-panel { flex: 2.1; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #c21807; box-shadow: 0 0 15px rgba(194, 24, 7, 0.15); }
-        .detail-panel { flex: 1.4; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #ffcc00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.15); position: sticky; top: 20px; }
-        .summary-panel { flex: 1.1; background-color: #111; padding: 20px; border-radius: 8px; border: 1px solid #c21807; box-shadow: 0 0 15px rgba(194, 24, 7, 0.15); position: sticky; top: 20px; }
+        /* Nokia Screen Panels */
+        .input-panel, .detail-panel, .summary-panel { 
+            background-color: var(--lcd-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 4px solid #000; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.5); 
+        }
+        .input-panel { flex: 2.1; }
+        .detail-panel { flex: 1.4; position: sticky; top: 20px; }
+        .summary-panel { flex: 1.1; position: sticky; top: 20px; }
         
-        h2, h3 { margin-top: 0; color: #ffcc00; text-transform: uppercase; letter-spacing: 1px; }
+        /* Pixelated Headers */
+        h2, h3 { 
+            font-family: 'VT323', monospace;
+            font-size: 32px;
+            margin-top: 0; 
+            color: var(--lcd-ink); 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            text-align: center;
+            border-bottom: 2px solid var(--lcd-ink);
+            padding-bottom: 10px;
+        }
         
-        .global-settings { background-color: #1a0505; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #c21807; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;}
-        .global-settings label { font-weight: bold; color: #c21807; font-size: 14px; text-transform: uppercase;}
+        .global-settings { 
+            background-color: transparent; 
+            padding: 10px 0; 
+            margin-bottom: 20px; 
+            border-bottom: 2px dashed var(--lcd-ink); 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            flex-wrap: wrap;
+        }
+        .global-settings label { 
+            font-weight: bold; 
+            color: var(--lcd-ink); 
+            font-size: 14px; 
+        }
         
-        .button-group { margin-top: 20px; display: flex; gap: 10px; }
+        .button-group { 
+            margin-top: 20px; 
+            display: flex; 
+            gap: 10px; 
+            justify-content: space-between;
+            border-top: 2px solid var(--lcd-ink);
+            padding-top: 15px;
+        }
         
-        /* Styled Buttons */
-        .add-btn { background-color: #c21807; color: #ffcc00; border: 1px solid #ffcc00; padding: 12px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: all 0.3s;}
-        .add-btn:hover { background-color: #a01005; box-shadow: 0 0 12px rgba(255, 204, 0, 0.4); }
+        /* Styled Soft-Key Buttons */
+        .add-btn, .clear-btn { 
+            background-color: var(--lcd-ink); 
+            color: var(--lcd-bg); 
+            border: 2px solid var(--lcd-ink); 
+            padding: 10px 15px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: all 0.1s;
+        }
+        .add-btn {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 10% 100%);
+            padding-left: 20px;
+        }
+        .clear-btn {
+            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
+            padding-right: 20px;
+        }
+        .add-btn:active, .clear-btn:active { 
+            background-color: transparent; 
+            color: var(--lcd-ink);
+        }
         
-        .clear-btn { background-color: #ffcc00; color: #c21807; border: 1px solid #c21807; padding: 12px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: all 0.3s;}
-        .clear-btn:hover { background-color: #e6b800; box-shadow: 0 0 12px rgba(194, 24, 7, 0.4); }
+        .treatment-row { 
+            display: flex; 
+            gap: 12px; 
+            background: transparent; 
+            border: 1px dotted var(--lcd-ink); 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            align-items: flex-end;
+        }
         
-        .treatment-row { display: flex; gap: 12px; background: #0a0a0a; border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 6px; align-items: flex-end;}
+        /* Retro Inputs */
+        select, input { 
+            padding: 6px; 
+            border: 1px solid var(--lcd-ink); 
+            background-color: transparent; 
+            color: var(--lcd-ink); 
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            box-sizing: border-box; 
+        } 
+        select:focus, input:focus { 
+            outline: none; 
+            background-color: var(--lcd-ink);
+            color: var(--lcd-bg);
+        }
+        input::placeholder { color: rgba(17, 17, 17, 0.5); }
         
-        /* Dark Theme Inputs */
-        select, input { padding: 8px; border: 1px solid #c21807; border-radius: 4px; font-size: 13px; box-sizing: border-box; background-color: #000; color: #ffcc00; } 
-        select:focus, input:focus { outline: none; border-color: #ffcc00; box-shadow: 0 0 5px rgba(255, 204, 0, 0.5); }
-        input::placeholder { color: #666; }
-        
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) sepia(1) saturate(5) hue-rotate(350deg); }
-        input[type="date"], input[type="text"] { font-family: monospace; }
+        /* Makes the date picker calendar icon black */
+        input[type="date"]::-webkit-calendar-picker-indicator { 
+            filter: invert(0); 
+            cursor: pointer;
+        }
         
         .drug-box { flex: 1; min-width: 120px; display: flex; flex-direction: column; }
-        .drug-box label { font-size: 11px; margin-bottom: 4px; color: #c21807; font-weight: bold; text-transform: uppercase;}
-        .drug-name { width: 100%; transition: border 0.3s; }
+        .drug-box label, .time-col label { 
+            font-size: 12px; 
+            margin-bottom: 4px; 
+            color: var(--lcd-ink); 
+            font-weight: bold; 
+        }
+        .drug-name { width: 100%; }
 
-        .time-group { display: flex; gap: 8px; background-color: #111; padding: 6px 10px; border-radius: 4px; border: 1px solid #333; }
+        .time-group { 
+            display: flex; 
+            gap: 8px; 
+            background-color: transparent; 
+            padding: 0; 
+            border: none; 
+        }
         .time-col { display: flex; flex-direction: column; }
-        .time-col label { font-size: 11px; margin-bottom: 4px; color: #c21807; font-weight: bold; text-transform: uppercase;}
         .time-col input { width: 70px; text-align: center; }
         
-        .remove-btn { background-color: #1a1a1a; color: #c21807; border: 1px solid #c21807; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; height: 34px; margin-bottom: 1px; transition: all 0.2s;}
-        .remove-btn:hover { background-color: #c21807; color: #000; }
+        .remove-btn { 
+            background-color: transparent; 
+            color: var(--lcd-ink); 
+            border: 2px solid var(--lcd-ink); 
+            cursor: pointer; 
+            font-weight: bold; 
+            height: 38px; 
+            margin-bottom: 1px; 
+        }
+        .remove-btn:hover { 
+            background-color: var(--lcd-ink); 
+            color: var(--lcd-bg); 
+        }
         
-        .result-line { margin-bottom: 15px; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 10px; color: #aaa;}
-        .highlight { font-weight: normal; color: #ffcc00; display: block; font-size: 13px; margin-top: 5px; line-height: 1.4;}
+        /* Output Results */
+        .result-line { 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+            font-weight: bold;
+            border-bottom: 1px dotted var(--lcd-ink); 
+            padding-bottom: 10px; 
+            color: var(--lcd-ink);
+        }
+        .highlight { 
+            font-family: 'VT323', monospace;
+            font-size: 22px; 
+            color: var(--lcd-ink); 
+            display: block; 
+            margin-top: 5px; 
+            line-height: 1.1;
+        }
         
-        .tally-list { font-size: 15px; font-family: monospace; font-weight: bold; color: #ffcc00; list-style: none; padding: 0; margin: 10px 0;}
-        .tally-list li { margin-bottom: 8px; padding: 10px; background: #0a0a0a; border-radius: 4px; text-align: left; border: 1px solid #c21807; display: flex; justify-content: space-between; box-shadow: 0 0 8px rgba(194, 24, 7, 0.2);}
+        .tally-list { 
+            font-size: 24px; 
+            font-family: 'VT323', monospace; 
+            color: var(--lcd-ink); 
+            list-style: none; 
+            padding: 0; 
+            margin: 10px 0;
+        }
+        .tally-list li { 
+            margin-bottom: 8px; 
+            padding: 5px 0; 
+            background: transparent; 
+            border-bottom: 1px dashed var(--lcd-ink); 
+            display: flex; 
+            justify-content: space-between; 
+        }
         
-        ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 13px; color: #e0e0e0;}
+        ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 20px; color: var(--lcd-ink);}
         li { margin-bottom: 6px; }
 
         @media (max-width: 1200px) {
@@ -73,7 +219,6 @@
 <body>
 
 <div class="app-wrapper">
-    <!-- LEFT PANEL -->
     <div class="input-panel">
         <h2>Treatment Log</h2>
         
@@ -86,12 +231,11 @@
         <div id="rowsContainer"></div>
         
         <div class="button-group">
-            <button class="add-btn" onclick="addRow()">+ Add Administration</button>
+            <button class="add-btn" onclick="addRow()">+ Add Admin</button>
             <button class="clear-btn" onclick="clearAll()">Clear All</button>
         </div>
     </div>
 
-    <!-- MIDDLE PANEL -->
     <div class="detail-panel">
         <h3>Description</h3>
         <div class="result-line">Infusions:<span class="highlight" id="infusionResult">--</span></div>
@@ -99,9 +243,8 @@
         <div class="result-line">Hydration:<span class="highlight" id="hydrationResult">--</span></div>
     </div>
 
-    <!-- RIGHT PANEL -->
     <div class="summary-panel">
-        <h3>Final CPT Summary</h3>
+        <h3>CPT Summary</h3>
         <ul class="tally-list" id="tallyResult"><li>--</li></ul>
     </div>
 </div>
@@ -125,7 +268,7 @@
     };
 
     function clearAll() {
-        if (confirm("Initiate Clean Slate Protocol? All treatments will be erased.")) {
+        if (confirm("Format system memory? All treatments will be erased.")) {
             localStorage.removeItem('hiiCalculatorStateDOS');
             document.getElementById('rowsContainer').innerHTML = '';
             document.getElementById('cutOffDate').value = '';
@@ -195,11 +338,11 @@
                 </div>
                 <div class="time-group">
                     <div class="time-col">
-                        <label>Start time</label>
+                        <label>Start</label>
                         <input type="text" class="start-time" value="${startVal}" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()">
                     </div>
                     <div class="time-col">
-                        <label>End time</label>
+                        <label>End</label>
                         <input type="text" class="stop-time" value="${stopVal}" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()">
                     </div>
                 </div>
@@ -221,12 +364,11 @@
         return Math.floor(timeMins / 60000);
     }
     
-    // Helper function to turn absolute minutes back into HH:MM strings for the descriptions
     function getDisplayTime(mins) {
         let d = new Date(mins * 60000);
         let h = d.getHours().toString().padStart(2, '0');
         let m = d.getMinutes().toString().padStart(2, '0');
-        return `${h}${m}`;
+        return `${h}:${m}`;
     }
 
     function checkOverlap(start1, stop1, start2, stop2) {
@@ -263,13 +405,16 @@
 
             rowsToSave.push({ dos: dosStr, type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
+            // Adjusted JS Validation colors for retro theme
             if (!drug && startStr.length === 5) {
-                drugInput.style.border = "2px solid #ff0000";
-                drugInput.style.backgroundColor = "#4a0000";
+                drugInput.style.border = "1px dashed var(--lcd-ink)";
+                drugInput.style.backgroundColor = "var(--lcd-ink)";
+                drugInput.style.color = "var(--lcd-bg)";
                 drug = "unnamed"; 
             } else {
-                drugInput.style.border = "1px solid #c21807";
-                drugInput.style.backgroundColor = "#000";
+                drugInput.style.border = "1px solid var(--lcd-ink)";
+                drugInput.style.backgroundColor = "transparent";
+                drugInput.style.color = "var(--lcd-ink)";
             }
 
             if (dosStr && startStr.length === 5) {
@@ -332,12 +477,12 @@
             let primaryDos = drugGroups[drug].dos;
             if (drugGroups[drug].totalTime >= 16 && !initialInfusion) {
                 initialInfusion = { drug: drug, blocks: drugGroups[drug].blocks };
-                infCodes.push(`<strong>96365</strong>: Initial administration of ${drug} (Total time: ${drugGroups[drug].totalTime} mins)`);
+                infCodes.push(`96365: Initial admin of ${drug} (${drugGroups[drug].totalTime}m)`);
                 addTally(primaryDos, '96365', 1);
                 
                 let extraHours = Math.floor((drugGroups[drug].totalTime - 31) / 60);
                 if (extraHours > 0) {
-                    infCodes.push(`<strong>96366 x ${extraHours}</strong>: Additional hour(s) of ${drug}`);
+                    infCodes.push(`96366 x ${extraHours}: Addt. hour(s) of ${drug}`);
                     addTally(primaryDos, '96366', extraHours);
                 }
                 
@@ -374,19 +519,19 @@
 
             if (isConcurrent) {
                 if (!concurrentBilled) {
-                    infCodes.push(`<strong>96368</strong>: ${grp.drug} concurrent with ${concurrentWithDrug} (Total time: ${grp.totalTime} mins)`);
+                    infCodes.push(`96368: ${grp.drug} concurrent w/ ${concurrentWithDrug} (${grp.totalTime}m)`);
                     addTally(grp.dos, '96368', 1);
                     concurrentBilled = true; 
                 } else {
-                    infCodes.push(`<em>Not billable</em>: ${grp.drug} concurrent with ${concurrentWithDrug} (Maximum of one 96368 allowed per encounter)`);
+                    infCodes.push(`[N/A]: ${grp.drug} concurrent w/ ${concurrentWithDrug} (Max one 96368)`);
                 }
             } else {
-                infCodes.push(`<strong>96367</strong>: Subsequent administration of ${grp.drug} (Total time: ${grp.totalTime} mins)`);
+                infCodes.push(`96367: Seq. admin of ${grp.drug} (${grp.totalTime}m)`);
                 addTally(grp.dos, '96367', 1);
                 
                 let extraHours = Math.floor((grp.totalTime - 31) / 60);
                 if (extraHours > 0) {
-                    infCodes.push(`<strong>96366 x ${extraHours}</strong>: Additional hour(s) of ${grp.drug}`);
+                    infCodes.push(`96366 x ${extraHours}: Addt. hour(s) of ${grp.drug}`);
                     addTally(grp.dos, '96366', extraHours);
                 }
             }
@@ -409,12 +554,12 @@
             blocks.sort((a, b) => a.start - b.start); 
 
             if (!initialInfusion && !firstPushAssigned) {
-                injCodes.push(`<strong>96374</strong>: Initial IVP of ${drug} at ${getDisplayTime(blocks[0].start)}`);
+                injCodes.push(`96374: Initial IVP of ${drug} @ ${getDisplayTime(blocks[0].start)}`);
                 addTally(blocks[0].dos, '96374', 1);
                 firstPushAssigned = true;
                 hasPrimaryPush = true;
             } else {
-                injCodes.push(`<strong>96375</strong>: Subsequent IVP of ${drug} at ${getDisplayTime(blocks[0].start)}`);
+                injCodes.push(`96375: Seq. IVP of ${drug} @ ${getDisplayTime(blocks[0].start)}`);
                 addTally(blocks[0].dos, '96375', 1);
             }
 
@@ -423,13 +568,13 @@
                 let gap = blocks[i].start - lastBilledTime;
 
                 if (gap >= 31) {
-                    injCodes.push(`<strong>96376</strong>: Subsequent same drug IVP of ${drug} at ${getDisplayTime(blocks[i].start)}`);
+                    injCodes.push(`96376: Seq. same drug IVP of ${drug} @ ${getDisplayTime(blocks[i].start)}`);
                     addTally(blocks[i].dos, '96376', 1);
                     lastBilledTime = blocks[i].start; 
                 } else {
                     let curT = getDisplayTime(blocks[i].start);
                     let prevT = getDisplayTime(lastBilledTime);
-                    injCodes.push(`<em>Not billable</em>: IVP of ${drug} at ${curT} not billable because no 31 minute gap between previous IVP (${prevT})`);
+                    injCodes.push(`[N/A]: IVP of ${drug} @ ${curT} (No 31m gap from ${prevT})`);
                 }
             }
         }
@@ -458,20 +603,20 @@
 
         if (netHydrationMinutes >= 31) {
             if (initialInfusion || hasPrimaryPush) {
-                hydCodes.push(`<strong>96361</strong>: Subsequent hydration (Total net time: ${netHydrationMinutes} mins)`);
+                hydCodes.push(`96361: Seq. hydration (Net: ${netHydrationMinutes}m)`);
                 addTally(primaryHydDos, '96361', 1);
             } else {
-                hydCodes.push(`<strong>96360</strong>: Initial hydration (Total net time: ${netHydrationMinutes} mins)`);
+                hydCodes.push(`96360: Initial hydration (Net: ${netHydrationMinutes}m)`);
                 addTally(primaryHydDos, '96360', 1);
             }
             
             let extraHydHours = Math.floor((netHydrationMinutes - 31) / 60);
             if (extraHydHours > 0) {
-                hydCodes.push(`<strong>96361 x ${extraHydHours}</strong>: Additional hydration hour(s)`);
+                hydCodes.push(`96361 x ${extraHydHours}: Addt. hydration hour(s)`);
                 addTally(primaryHydDos, '96361', extraHydHours);
             }
         } else if (grossHydTime > 0) {
-            hydCodes.push(`<em>Not billable</em>: Net hydration time (${netHydrationMinutes} mins) is less than 31 minutes`);
+            hydCodes.push(`[N/A]: Net hydration time (${netHydrationMinutes}m) < 31m`);
         }
 
         // --- RENDER OUTPUT ---
@@ -502,8 +647,9 @@
                 
                 sortedCodes.forEach(code => {
                     let units = codesOnDate[code];
-                    let unitText = units > 1 ? 'Units' : 'Unit';
-                    tallyHTML += `<li><span>${dos}</span> <span>${code}</span> <span>${units} ${unitText}</span></li>`;
+                    let unitText = units > 1 ? 'x' : 'x';
+                    // Replaced "Unit" text with a simple "x[Number]" style fitting a small screen
+                    tallyHTML += `<li><span>${code}</span> <span>${unitText}${units}</span></li>`;
                 });
             });
         }
