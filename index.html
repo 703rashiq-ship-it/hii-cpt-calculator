@@ -661,6 +661,90 @@
         }
         document.getElementById('tallyResult').innerHTML = tallyHTML;
     }
+    <div id="poke-follower"></div>
+
+<style>
+  #poke-follower {
+    /* Keeps the figure positioned relative to the screen */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    
+    width: 60px;
+    height: 60px;
+    
+    /* Replace this URL with your custom Pokémon figure */
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    
+    /* CRITICAL: Prevents the image from blocking clicks on your actual content */
+    pointer-events: none; 
+    
+    /* Puts it in the background. Use a high number like 9999 if you want it floating over everything instead */
+    z-index: -1; 
+    
+    /* Centers the image on the cursor */
+    transform: translate(-50%, -50%);
+    
+    /* Hides the figure until the mouse starts moving */
+    opacity: 0; 
+    transition: opacity 0.3s ease;
+  }
+.poke-trail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 15px;
+  height: 15px;
+  background-color: #FFCB05; /* Pikachu Yellow - change this to match your character */
+  border-radius: 50%; /* Makes them circles */
+  
+  /* CRITICAL: Prevents blocking clicks */
+  pointer-events: none;
+  
+  /* Put them further back than the main figure */
+  z-index: -2; 
+  
+  transform: translate(-50%, -50%);
+  opacity: 0; /* Hidden initially */
+}
+/* Add this below your .poke-trail CSS */
+
+.falling-particle {
+  position: fixed;
+  top: -50px; /* Starts just above the top edge of the screen */
+  width: 12px;
+  height: 12px;
+  
+  /* Styling it like a little spark. You could also use background-image here! */
+  background-color: #FFCB05; 
+  border-radius: 50%;
+  box-shadow: 0 0 5px #FFCB05, 0 0 10px #FF9D00;
+  
+  /* CRITICAL: Keeps them in the background and unclickable */
+  pointer-events: none;
+  z-index: -3; /* Placed behind the cursor and the trail */
+  
+  /* The animation is driven by CSS keyframes defined below */
+  animation-name: fall-down;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/* Defines the falling motion */
+@keyframes fall-down {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    /* Falls slightly past the bottom of the screen */
+    transform: translateY(110vh) rotate(360deg); 
+  }
+}
+</style>
+
+<script src="follower.js"></script>
 </script>
 </body>
 </html>
