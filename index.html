@@ -1,225 +1,236 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HII CPT Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lcd-bg: #E5D375;
-            --lcd-ink: #111111;
+            --base-bg: #e0e5ec;
+            --text-main: #4a5568;
+            --text-muted: #a0aec0;
+            --accent-peach: #ffb07c;
+            --shadow-light: #ffffff;
+            --shadow-dark: rgba(163,177,198,0.6);
         }
 
-        /* Phone body casing */
         body { 
-            font-family: Arial, sans-serif; 
-            background-color: #1a1e24; 
-            color: var(--lcd-ink); 
+            font-family: 'Nunito', sans-serif; 
+            background-color: var(--base-bg); 
+            color: var(--text-main); 
             margin: 0; 
-            padding: 20px; 
+            padding: 40px 20px; 
         }
         
         .app-wrapper { 
             display: flex; 
-            gap: 20px; 
+            gap: 30px; 
             max-width: 1400px; 
             margin: 0 auto; 
             align-items: flex-start; 
         }
         
-        /* Nokia Screen Panels */
+        /* Neomorphic Screen Panels */
         .input-panel, .detail-panel, .summary-panel { 
-            background-color: var(--lcd-bg); 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 4px solid #000; 
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.5); 
+            background-color: var(--base-bg); 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 
+                9px 9px 16px var(--shadow-dark), 
+                -9px -9px 16px var(--shadow-light);
         }
         .input-panel { flex: 2.1; }
-        .detail-panel { flex: 1.4; position: sticky; top: 20px; }
-        .summary-panel { flex: 1.1; position: sticky; top: 20px; }
+        .detail-panel { flex: 1.4; position: sticky; top: 40px; }
+        .summary-panel { flex: 1.1; position: sticky; top: 40px; }
         
-        /* Pixelated Headers */
         h2, h3 { 
-            font-family: 'VT323', monospace;
-            font-size: 32px;
+            font-size: 24px;
             margin-top: 0; 
-            color: var(--lcd-ink); 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            text-align: center;
-            border-bottom: 2px solid var(--lcd-ink);
-            padding-bottom: 10px;
+            color: #2d3748; 
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(163,177,198,0.2);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
         
         .global-settings { 
-            background-color: transparent; 
-            padding: 10px 0; 
-            margin-bottom: 20px; 
-            border-bottom: 2px dashed var(--lcd-ink); 
+            padding: 10px 0 20px 0; 
+            margin-bottom: 30px; 
             display: flex; 
             align-items: center; 
-            gap: 15px; 
+            gap: 20px; 
             flex-wrap: wrap;
         }
+        
         .global-settings label { 
-            font-weight: bold; 
-            color: var(--lcd-ink); 
-            font-size: 14px; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            font-size: 15px; 
         }
         
         .button-group { 
-            margin-top: 20px; 
+            margin-top: 30px; 
             display: flex; 
-            gap: 10px; 
-            justify-content: space-between;
-            border-top: 2px solid var(--lcd-ink);
-            padding-top: 15px;
+            gap: 15px; 
+            justify-content: flex-start;
         }
         
-        /* Styled Soft-Key Buttons */
+        /* Neomorphic Buttons */
         .add-btn, .clear-btn { 
-            background-color: var(--lcd-ink); 
-            color: var(--lcd-bg); 
-            border: 2px solid var(--lcd-ink); 
-            padding: 10px 15px; 
-            font-weight: bold; 
-            font-size: 14px; 
+            background-color: var(--base-bg); 
+            color: var(--text-main); 
+            border: none; 
+            border-radius: 12px; 
+            padding: 12px 24px; 
+            font-weight: 700; 
+            font-size: 15px; 
             cursor: pointer; 
-            transition: all 0.1s;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 
+                6px 6px 10px var(--shadow-dark), 
+                -6px -6px 10px var(--shadow-light);
         }
+        
         .add-btn {
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 10% 100%);
-            padding-left: 20px;
+            color: var(--accent-peach);
         }
-        .clear-btn {
-            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
-            padding-right: 20px;
-        }
+
         .add-btn:active, .clear-btn:active { 
-            background-color: transparent; 
-            color: var(--lcd-ink);
+            box-shadow: 
+                inset 4px 4px 8px var(--shadow-dark),
+                inset -4px -4px 8px var(--shadow-light);
         }
         
         .treatment-row { 
             display: flex; 
-            gap: 12px; 
+            gap: 15px; 
             background: transparent; 
-            border: 1px dotted var(--lcd-ink); 
-            padding: 10px; 
-            margin-bottom: 10px; 
+            padding: 15px 0; 
+            margin-bottom: 15px; 
             align-items: flex-end;
+            border-bottom: 1px solid rgba(163,177,198,0.2);
         }
         
-        /* Retro Inputs */
+        /* Neomorphic Inputs (Pressed-in effect) */
         select, input { 
-            padding: 6px; 
-            border: 1px solid var(--lcd-ink); 
-            background-color: transparent; 
-            color: var(--lcd-ink); 
-            font-family: 'VT323', monospace;
-            font-size: 20px;
+            padding: 12px 15px; 
+            border: none; 
+            border-radius: 10px;
+            background-color: var(--base-bg); 
+            color: var(--text-main); 
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
             box-sizing: border-box; 
+            box-shadow: 
+                inset 4px 4px 8px var(--shadow-dark), 
+                inset -4px -4px 8px var(--shadow-light);
+            transition: all 0.2s ease-in-out;
         } 
+
         select:focus, input:focus { 
             outline: none; 
-            background-color: var(--lcd-ink);
-            color: var(--lcd-bg);
+            box-shadow: 
+                inset 6px 6px 12px var(--shadow-dark), 
+                inset -6px -6px 12px var(--shadow-light);
         }
-        input::placeholder { color: rgba(17, 17, 17, 0.5); }
         
-        /* Makes the date picker calendar icon black */
-        input[type="date"]::-webkit-calendar-picker-indicator { 
-            filter: invert(0); 
-            cursor: pointer;
-        }
+        input::placeholder { color: var(--text-muted); font-weight: 400; }
         
         .drug-box { flex: 1; min-width: 120px; display: flex; flex-direction: column; }
         .drug-box label, .time-col label { 
-            font-size: 12px; 
-            margin-bottom: 4px; 
-            color: var(--lcd-ink); 
-            font-weight: bold; 
+            font-size: 13px; 
+            margin-bottom: 8px; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .drug-name { width: 100%; }
 
         .time-group { 
             display: flex; 
-            gap: 8px; 
-            background-color: transparent; 
-            padding: 0; 
-            border: none; 
+            gap: 12px; 
         }
         .time-col { display: flex; flex-direction: column; }
-        .time-col input { width: 70px; text-align: center; }
+        .time-col input { width: 85px; text-align: center; }
         
         .remove-btn { 
-            background-color: transparent; 
-            color: var(--lcd-ink); 
-            border: 2px solid var(--lcd-ink); 
+            background-color: var(--base-bg); 
+            color: #ff6b6b; 
+            border: none; 
+            border-radius: 10px;
             cursor: pointer; 
             font-weight: bold; 
-            height: 38px; 
-            margin-bottom: 1px; 
+            height: 45px;
+            width: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2px;
+            box-shadow: 
+                4px 4px 8px var(--shadow-dark), 
+                -4px -4px 8px var(--shadow-light);
+            transition: all 0.2s;
         }
-        .remove-btn:hover { 
-            background-color: var(--lcd-ink); 
-            color: var(--lcd-bg); 
+        
+        .remove-btn:active { 
+            box-shadow: 
+                inset 3px 3px 6px var(--shadow-dark), 
+                inset -3px -3px 6px var(--shadow-light);
         }
         
         /* Output Results */
         .result-line { 
-            margin-bottom: 15px; 
-            font-size: 14px; 
-            font-weight: bold;
-            border-bottom: 1px dotted var(--lcd-ink); 
-            padding-bottom: 10px; 
-            color: var(--lcd-ink);
+            margin-bottom: 20px; 
+            font-size: 16px; 
+            font-weight: 700;
+            color: var(--text-muted);
         }
+        
         .highlight { 
-            font-family: 'VT323', monospace;
-            font-size: 22px; 
-            color: var(--lcd-ink); 
+            font-size: 15px; 
+            color: var(--text-main); 
             display: block; 
-            margin-top: 5px; 
-            line-height: 1.1;
+            margin-top: 10px; 
+            font-weight: 600;
+            line-height: 1.4;
         }
         
         .tally-list { 
-            font-size: 24px; 
-            font-family: 'VT323', monospace; 
-            color: var(--lcd-ink); 
+            font-size: 16px; 
+            color: var(--text-main); 
             list-style: none; 
             padding: 0; 
             margin: 10px 0;
         }
+        
         .tally-list li { 
-            margin-bottom: 8px; 
-            padding: 5px 0; 
-            background: transparent; 
-            border-bottom: 1px dashed var(--lcd-ink); 
+            margin-bottom: 12px; 
+            padding: 12px 15px; 
+            background: var(--base-bg);
+            border-radius: 12px;
             display: flex; 
             justify-content: space-between; 
+            font-weight: 700;
+            box-shadow: 
+                4px 4px 8px var(--shadow-dark), 
+                -4px -4px 8px var(--shadow-light);
         }
         
-        ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 20px; color: var(--lcd-ink);}
-        li { margin-bottom: 6px; }
+        ul { margin: 5px 0 0 0; padding-left: 20px; font-size: 15px; color: var(--text-main); font-weight: 600;}
+        li { margin-bottom: 8px; }
 
         @media (max-width: 1200px) {
             .app-wrapper { flex-direction: column; }
             .input-panel, .detail-panel, .summary-panel { width: 100%; position: static; box-sizing: border-box; }
-            .treatment-row { flex-wrap: wrap; align-items: flex-start; }
+            .treatment-row { flex-wrap: wrap; align-items: flex-start; padding-bottom: 25px;}
             .drug-box, .time-group { width: 100%; }
-            .time-group { flex-direction: column; gap: 10px; }
+            .time-group { flex-direction: row; gap: 15px; }
             .time-col input { width: 100%; }
         }
-        /* Force crisp, pixelated rendering for the retro aesthetic */
-* {
-    -webkit-font-smoothing: none; /* Targets Chrome, Edge, Safari */
-    -moz-osx-font-smoothing: grayscale; /* Targets Firefox */
-    text-rendering: crispEdges; /* Tells the browser to prioritize sharp edges */
-}
     </style>
 </head>
 <body>
@@ -274,7 +285,7 @@
     };
 
     function clearAll() {
-        if (confirm("Format system memory? All treatments will be erased.")) {
+        if (confirm("Clear all treatments?")) {
             localStorage.removeItem('hiiCalculatorStateDOS');
             document.getElementById('rowsContainer').innerHTML = '';
             document.getElementById('cutOffDate').value = '';
@@ -352,7 +363,7 @@
                         <input type="text" class="stop-time" value="${stopVal}" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()">
                     </div>
                 </div>
-                <button class="remove-btn" onclick="removeRow('${rowId}')">X</button>
+                <button class="remove-btn" onclick="removeRow('${rowId}')">✕</button>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', rowHTML);
@@ -411,16 +422,14 @@
 
             rowsToSave.push({ dos: dosStr, type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
-            // Adjusted JS Validation colors for retro theme
+            // Updated JS Validation colors for Neomorphic theme
             if (!drug && startStr.length === 5) {
-                drugInput.style.border = "1px dashed var(--lcd-ink)";
-                drugInput.style.backgroundColor = "var(--lcd-ink)";
-                drugInput.style.color = "var(--lcd-bg)";
+                drugInput.style.boxShadow = "inset 4px 4px 8px rgba(255, 100, 100, 0.15), inset -4px -4px 8px rgba(255,255,255, 0.5)";
+                drugInput.style.color = "#ff6b6b";
                 drug = "unnamed"; 
             } else {
-                drugInput.style.border = "1px solid var(--lcd-ink)";
-                drugInput.style.backgroundColor = "transparent";
-                drugInput.style.color = "var(--lcd-ink)";
+                drugInput.style.boxShadow = "inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)";
+                drugInput.style.color = "var(--text-main)";
             }
 
             if (dosStr && startStr.length === 5) {
@@ -654,7 +663,6 @@
                 sortedCodes.forEach(code => {
                     let units = codesOnDate[code];
                     let unitText = units > 1 ? 'x' : 'x';
-                    // Replaced "Unit" text with a simple "x[Number]" style fitting a small screen
                     tallyHTML += `<li><span>${code}</span> <span>${unitText}${units}</span></li>`;
                 });
             });
