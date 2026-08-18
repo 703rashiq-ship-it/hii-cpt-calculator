@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +12,7 @@
             
             /* 2. Accent Color */
             --accent-peach: #ffb48a;    
+            --accent-red: #e74c3c;
             
             /* 3. Typography & Iconography */
             --text-main: #4b5e78;       
@@ -61,7 +61,6 @@
             margin-bottom: 25px;
         }
 
-        /* Container to align the Summary Header and the Rationale Button */
         .summary-header-container {
             display: flex;
             justify-content: space-between;
@@ -125,7 +124,6 @@
                 inset -4px -4px 8px var(--shadow-light);
         }
 
-        /* Smaller button docked next to the Summary Header */
         .info-btn {
             background-color: var(--base-bg);
             color: var(--text-muted);
@@ -160,13 +158,13 @@
         
         select, input { 
             padding: 12px 15px; 
-            border: none; 
-            border-radius: 12px;
+            border: 2px solid transparent; 
+            border-radius: 12px; 
             background-color: var(--base-bg); 
             color: var(--text-main); 
-            font-family: 'Nunito', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
+            font-family: 'Nunito', sans-serif; 
+            font-size: 16px; 
+            font-weight: 600; 
             box-sizing: border-box; 
             box-shadow: 
                 inset 4px 4px 8px var(--shadow-dark), 
@@ -180,6 +178,23 @@
                 inset 6px 6px 12px var(--shadow-dark), 
                 inset -6px -6px 12px var(--shadow-light);
         }
+
+        /* Cutoff Warning and Error UI */
+        .input-error {
+            border: 2px solid var(--accent-red) !important;
+            color: var(--accent-red) !important;
+        }
+
+        .cutoff-warning {
+            display: none;
+            color: var(--accent-red);
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
         
         input::placeholder { color: var(--text-muted); font-weight: 400; }
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: pointer; }
@@ -190,7 +205,7 @@
             margin-bottom: 8px; 
             color: var(--text-muted); 
             font-weight: 700; 
-            text-transform: uppercase;
+            text-transform: uppercase; 
             letter-spacing: 0.5px;
         }
         .drug-name { width: 100%; }
@@ -203,15 +218,15 @@
             background-color: var(--base-bg); 
             color: var(--text-muted); 
             border: none; 
-            border-radius: 12px;
+            border-radius: 12px; 
             cursor: pointer; 
             font-weight: bold; 
-            height: 46px;
-            width: 46px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 2px;
+            height: 46px; 
+            width: 46px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 2px; 
             box-shadow: 
                 4px 4px 8px var(--shadow-dark), 
                 -4px -4px 8px var(--shadow-light);
@@ -225,7 +240,7 @@
             color: var(--accent-peach);
         }
         
-        /* --- FLOATING RATIONALE MODAL --- */
+        /* Floating Modal Styles */
         .floating-modal {
             display: none;
             position: fixed;
@@ -274,7 +289,7 @@
         .result-line { 
             margin-bottom: 20px; 
             font-size: 16px; 
-            font-weight: 700;
+            font-weight: 700; 
             color: var(--text-muted);
         }
         
@@ -283,11 +298,10 @@
             color: var(--text-main); 
             display: block; 
             margin-top: 10px; 
-            font-weight: 600;
+            font-weight: 600; 
             line-height: 1.4;
         }
         
-        /* CPT SUMMARY STYLES */
         .tally-list { 
             font-size: 15px; 
             color: var(--text-main); 
@@ -314,12 +328,12 @@
         .tally-list .cpt-item { 
             margin-top: 12px; 
             padding: 14px 18px; 
-            background: var(--base-bg);
-            border-radius: 12px;
+            background: var(--base-bg); 
+            border-radius: 12px; 
             display: flex; 
             justify-content: space-between; 
-            align-items: center;
-            font-weight: 700;
+            align-items: center; 
+            font-weight: 700; 
             box-shadow: 
                 5px 5px 10px var(--shadow-dark), 
                 -5px -5px 10px var(--shadow-light);
@@ -349,7 +363,7 @@
         
         <div class="global-settings">
             <label>Global Cut-Off:</label>
-            <input type="date" id="cutOffDate" onchange="calculateAll()" title="Date of Service">
+            <input type="date" id="cutOffDate" onchange="onGlobalDateChange()" title="Date of Service">
             <input type="text" id="cutOffTime" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()" title="24-Hour Format (e.g., 1430)">
         </div>
 
@@ -384,7 +398,6 @@
 </div>
 
 <script>
-    // --- DRAGGABLE MODAL LOGIC ---
     function toggleRationale() {
         const modal = document.getElementById('rationaleModal');
         modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
@@ -455,6 +468,16 @@
         }
     }
 
+    function onGlobalDateChange() {
+        const globalDate = document.getElementById('cutOffDate').value;
+        if (globalDate) {
+            document.querySelectorAll('.dos-date').forEach(input => {
+                input.value = globalDate;
+            });
+        }
+        calculateAll();
+    }
+
     function formatTime(input) {
         let val = input.value.replace(/\D/g, ''); 
         if (val.length > 4) val = val.substring(0, 4); 
@@ -478,14 +501,20 @@
         const rowId = 'row_' + Date.now();
         
         let defaultDos = '';
+        const globalCutOffDate = document.getElementById('cutOffDate').value;
+
         if (!data) {
-            const existingDates = document.querySelectorAll('.dos-date');
-            if (existingDates.length > 0) {
-                defaultDos = existingDates[existingDates.length - 1].value;
+            if (globalCutOffDate) {
+                defaultDos = globalCutOffDate;
             } else {
-                const today = new Date();
-                const offset = today.getTimezoneOffset() * 60000;
-                defaultDos = (new Date(today - offset)).toISOString().split('T')[0];
+                const existingDates = document.querySelectorAll('.dos-date');
+                if (existingDates.length > 0) {
+                    defaultDos = existingDates[existingDates.length - 1].value;
+                } else {
+                    const today = new Date();
+                    const offset = today.getTimezoneOffset() * 60000;
+                    defaultDos = (new Date(today - offset)).toISOString().split('T')[0];
+                }
             }
         }
 
@@ -510,15 +539,18 @@
                     <input type="text" class="drug-name" placeholder="Name" value="${drugVal}" oninput="calculateAll()">
                 </div>
                 <div class="drug-box">
+                    <span class="cutoff-warning dos-warning">Crossed Cut Off Time</span>
                     <label>DOS</label>
                     <input type="date" class="dos-date" value="${dosVal}" onchange="calculateAll()">
                 </div>
                 <div class="time-group">
                     <div class="time-col">
+                        <span class="cutoff-warning start-warning">Crossed Cut Off Time</span>
                         <label>Start</label>
                         <input type="text" class="start-time" value="${startVal}" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()">
                     </div>
                     <div class="time-col">
+                        <span class="cutoff-warning stop-warning">Crossed Cut Off Time</span>
                         <label>End</label>
                         <input type="text" class="stop-time" value="${stopVal}" placeholder="HH:MM" maxlength="5" oninput="formatTime(this); calculateAll()">
                     </div>
@@ -576,16 +608,31 @@
             let type = row.querySelector('.type-select').value;
             const drugInput = row.querySelector('.drug-name');
             let drug = drugInput.value.trim();
-            const dosStr = row.querySelector('.dos-date').value;
-            const startStr = row.querySelector('.start-time').value;
-            let stopStr = row.querySelector('.stop-time').value;
+            const dosInput = row.querySelector('.dos-date');
+            const startInput = row.querySelector('.start-time');
+            const stopInput = row.querySelector('.stop-time');
+            
+            const dosWarning = row.querySelector('.dos-warning');
+            const startWarning = row.querySelector('.start-warning');
+            const stopWarning = row.querySelector('.stop-warning');
+
+            const dosStr = dosInput.value;
+            const startStr = startInput.value;
+            let stopStr = stopInput.value;
+
+            // Reset error styles & warnings
+            dosInput.classList.remove('input-error');
+            startInput.classList.remove('input-error');
+            stopInput.classList.remove('input-error');
+            if (dosWarning) dosWarning.style.display = 'none';
+            if (startWarning) startWarning.style.display = 'none';
+            if (stopWarning) stopWarning.style.display = 'none';
 
             rowsToSave.push({ dos: dosStr, type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
             const hasValidStart = startStr && startStr.length === 5;
             const hasValidStop = stopStr && stopStr.length === 5;
 
-            // Highlight if time exists but name is missing
             if (!drug && (hasValidStart || hasValidStop)) {
                 drugInput.style.boxShadow = "inset 4px 4px 8px rgba(255, 180, 138, 0.4), inset -4px -4px 8px var(--shadow-light)";
                 drugInput.style.color = "var(--accent-peach)";
@@ -595,12 +642,31 @@
                 drugInput.style.color = "var(--text-main)";
             }
 
+            // --- CROSS-CUTOFF VALIDATION ACROSS ALL TYPES ---
+            let dateExceeds = (cutOffDateStr && dosStr && dosStr > cutOffDateStr);
+
+            if (dateExceeds) {
+                dosInput.classList.add('input-error');
+                startInput.classList.add('input-error');
+                stopInput.classList.add('input-error');
+                if (dosWarning) dosWarning.style.display = 'block';
+                if (startWarning) startWarning.style.display = 'block';
+                if (stopWarning) stopWarning.style.display = 'block';
+                return; // Omit from calculation
+            }
+
             if (dosStr) {
-                // CASE 1: Stop time only entered for Infusion -> Convert directly to IV Push
+                // Scenario A: Stop time ONLY for Infusion -> Convert to IV Push
                 if (type === 'infusion' && !hasValidStart && hasValidStop) {
                     let pushTime = getAbsoluteMinutes(dosStr, stopStr);
                     if (pushTime !== null) {
-                        if (globalCutOffMins && pushTime > globalCutOffMins) return;
+                        if (globalCutOffMins && pushTime > globalCutOffMins) {
+                            startInput.classList.add('input-error');
+                            stopInput.classList.add('input-error');
+                            if (startWarning) startWarning.style.display = 'block';
+                            if (stopWarning) stopWarning.style.display = 'block';
+                            return; 
+                        }
                         treatments.push({ 
                             type: 'injection', 
                             drug: drug + " (stop only)", 
@@ -611,7 +677,7 @@
                         });
                     }
                 }
-                // CASE 2: Standard entries with Start Time
+                // Scenario B: Standard entries with Start Time
                 else if (hasValidStart) {
                     let start = getAbsoluteMinutes(dosStr, startStr);
                     let stop = null;
@@ -628,11 +694,20 @@
                         }
                     }
 
-                    if (globalCutOffMins && start !== null) {
-                        if (start > globalCutOffMins) return; 
-                        if (stop !== null && stop > globalCutOffMins) {
-                            stop = globalCutOffMins; 
-                        }
+                    // 1. Check if START time is past cut-off
+                    if (globalCutOffMins && start !== null && start > globalCutOffMins) {
+                        startInput.classList.add('input-error');
+                        stopInput.classList.add('input-error');
+                        if (startWarning) startWarning.style.display = 'block';
+                        if (stopWarning) stopWarning.style.display = 'block';
+                        return; // Omit from calculation
+                    }
+
+                    // 2. Check if STOP time is past cut-off
+                    if (globalCutOffMins && stop !== null && stop > globalCutOffMins) {
+                        stopInput.classList.add('input-error');
+                        if (stopWarning) stopWarning.style.display = 'block';
+                        stop = globalCutOffMins; // Truncate duration to cut-off
                     }
 
                     if (start !== null && stop !== null) {
@@ -656,7 +731,7 @@
         let hydrations = treatments.filter(t => t.type === 'hydration');
         let injections = treatments.filter(t => t.type === 'injection');
 
-        // --- GLOBAL INITIAL LOGIC ---
+        // Global initial logic & CPT code calculation
         let hasGlobalInitial = false; 
         let activeTimeline = []; 
         let concurrentBilled = false; 
@@ -751,7 +826,7 @@
             activeTimeline = activeTimeline.concat(grp.blocks);
         });
 
-        // --- INJECTIONS ---
+        // Injections
         let injCodes = [];
         let injDrugGroups = {};
         injections.forEach(inj => {
@@ -805,7 +880,7 @@
             }
         }
 
-        // --- HYDRATION ---
+        // Hydration
         let hydCodes = [];
         let grossHydTime = hydrations.reduce((sum, h) => sum + h.duration, 0);
         let primaryHydDos = hydrations.length > 0 ? hydrations[0].dos : null;
