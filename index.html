@@ -582,7 +582,11 @@
 
             rowsToSave.push({ dos: dosStr, type: type, drug: drugInput.value, start: startStr, stop: stopStr });
 
-            if (!drug && startStr.length === 5) {
+            const hasValidStart = startStr && startStr.length === 5;
+            const hasValidStop = stopStr && stopStr.length === 5;
+
+            // Highlight if time exists but name is missing
+            if (!drug && (hasValidStart || hasValidStop)) {
                 drugInput.style.boxShadow = "inset 4px 4px 8px rgba(255, 180, 138, 0.4), inset -4px -4px 8px var(--shadow-light)";
                 drugInput.style.color = "var(--accent-peach)";
                 drug = "unnamed"; 
@@ -591,36 +595,54 @@
                 drugInput.style.color = "var(--text-main)";
             }
 
-            if (dosStr && startStr.length === 5) {
-                let start = getAbsoluteMinutes(dosStr, startStr);
-                let stop = null;
-
-                if (type === 'injection') {
-                    stop = start;
-                } else {
-                    if (stopStr && stopStr.length === 5) {
-                        stop = getAbsoluteMinutes(dosStr, stopStr);
-                        if (stop < start) stop += (24 * 60); 
-                    } 
-                    if ((!stopStr || stopStr.length < 5) && globalCutOffMins) {
-                        stop = globalCutOffMins;
+            if (dosStr) {
+                // CASE 1: Stop time only entered for Infusion -> Convert directly to IV Push
+                if (type === 'infusion' && !hasValidStart && hasValidStop) {
+                    let pushTime = getAbsoluteMinutes(dosStr, stopStr);
+                    if (pushTime !== null) {
+                        if (globalCutOffMins && pushTime > globalCutOffMins) return;
+                        treatments.push({ 
+                            type: 'injection', 
+                            drug: drug + " (stop only)", 
+                            start: pushTime, 
+                            stop: pushTime, 
+                            duration: 0, 
+                            dos: dosStr 
+                        });
                     }
                 }
+                // CASE 2: Standard entries with Start Time
+                else if (hasValidStart) {
+                    let start = getAbsoluteMinutes(dosStr, startStr);
+                    let stop = null;
 
-                if (globalCutOffMins && start !== null) {
-                    if (start > globalCutOffMins) return; 
-                    if (stop !== null && stop > globalCutOffMins) {
-                        stop = globalCutOffMins; 
+                    if (type === 'injection') {
+                        stop = start;
+                    } else {
+                        if (hasValidStop) {
+                            stop = getAbsoluteMinutes(dosStr, stopStr);
+                            if (stop < start) stop += (24 * 60); 
+                        } 
+                        if (!hasValidStop && globalCutOffMins) {
+                            stop = globalCutOffMins;
+                        }
                     }
-                }
 
-                if (start !== null && stop !== null) {
-                    let duration = stop - start;
-                    if (type === 'infusion' && duration < 16) {
-                        type = 'injection';
-                        drug += " (short)";
+                    if (globalCutOffMins && start !== null) {
+                        if (start > globalCutOffMins) return; 
+                        if (stop !== null && stop > globalCutOffMins) {
+                            stop = globalCutOffMins; 
+                        }
                     }
-                    treatments.push({ type, drug, start, stop, duration, dos: dosStr });
+
+                    if (start !== null && stop !== null) {
+                        let duration = stop - start;
+                        if (type === 'infusion' && duration < 16) {
+                            type = 'injection';
+                            drug += " (short)";
+                        }
+                        treatments.push({ type, drug, start, stop, duration, dos: dosStr });
+                    }
                 }
             }
         });
